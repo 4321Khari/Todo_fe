@@ -5,7 +5,7 @@ import Todo from "./components/todo";
 export default function Home() {
   const [userData, setUserData] = useState({});
   const [toggleLogin, setToggleLogin] = useState(false);
-  const [togglePage, setTogglePage] = useState(true);
+  const [togglePage, setTogglePage] = useState(false);
   const [getAllTodo, setGetAllTodo] = useState();
   useEffect(() => {
     if (togglePage) {
