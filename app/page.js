@@ -1,101 +1,180 @@
-import Image from "next/image";
+"use client";
+import { useEffect, useState } from "react";
+import Todo from "./components/todo";
 
 export default function Home() {
-  return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-8 row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-semibold">
-              app/page.js
-            </code>
-            .
-          </li>
-          <li>Save and see your changes instantly.</li>
-        </ol>
+  const [userData, setUserData] = useState({});
+  const [toggleLogin, setToggleLogin] = useState(false);
+  const [togglePage, setTogglePage] = useState(true);
+  const [getAllTodo, setGetAllTodo] = useState();
+  useEffect(() => {
+    if (togglePage) {
+      getTodo();
+    }
+  }, [togglePage]);
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+  const getTodo = async () => {
+    const base_url = process.env.NEXT_PUBLIC_BASE_URL;
+    const item = localStorage.getItem("token");
+    let token;
+
+    if (item) {
+      token = JSON.parse(item);
+      token = token.token;
+    }
+    const response = await fetch(`${base_url}`, {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+    const res = await response.json();
+    if (res) {
+      console.log("getting all todo", res, response);
+
+      setGetAllTodo(res);
+    }
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    setTogglePage(false);
+  };
+  const handleLogin = async (e) => {
+    if (!togglePage) {
+      delete userData.name;
+    }
+    const base_url = process.env.NEXT_PUBLIC_BASE_URL;
+    e.preventDefault();
+    try {
+      console.log("data", userData, base_url);
+
+      const response = await fetch(`${base_url}/login`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(userData),
+      });
+      const res = await response.json();
+      console.log("loginishere", res);
+      localStorage.setItem("token", JSON.stringify(res));
+      if (res.token) {
+        setTogglePage(true);
+      }
+    } catch (err) {
+      console.log("error", err);
+    }
+  };
+
+  const handleSignUp = async (e) => {
+    e.preventDefault();
+    console.log("signup");
+    const base_url = process.env.NEXT_PUBLIC_BASE_URL;
+
+    try {
+      console.log("data", userData, base_url);
+
+      const response = await fetch(`${base_url}/signup`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(userData),
+      });
+      const res = await response.json();
+      console.log("loginishere", res);
+      localStorage.setItem("token", JSON.stringify(res));
+      if (res.email) {
+        setToggleLogin(false);
+      }
+    } catch (err) {
+      console.log("error", err);
+    }
+  };
+  return (
+    <>
+      {togglePage && (
+        <div className=" w-full h-12 flex  pr-2  pt-2 justify-end">
+          {" "}
+          <button
+            onClick={handleLogout}
+            className="bg-blue-500 text-white px-4 font-bold  rounded hover:bg-blue-600"
           >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:min-w-44"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+            Logout
+          </button>
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-6 flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
-    </div>
+      )}
+      {togglePage === false ? (
+        <>
+          <div className=" w-full h-screen flex  items-center justify-center ">
+            <div className="flex w-1/2 h-96  flex-col  items-center">
+              <h1 className=" font-bold text-lg">
+                {toggleLogin ? "Sign Up" : "Login"}
+              </h1>
+              <form
+                className="flex flex-col w-full  items-center"
+                action=""
+                onSubmit={toggleLogin ? handleSignUp : handleLogin}
+              >
+                {toggleLogin ? (
+                  <input
+                    type="text"
+                    className="  pl-2  w-1/2 mt-2 h-10 text-black outline-none  rounded-lg "
+                    placeholder="Enter your name"
+                    onChange={(e) =>
+                      setUserData((prev) => ({ ...prev, name: e.target.value }))
+                    }
+                    required
+                  />
+                ) : null}
+
+                <input
+                  type="email"
+                  className="  pl-2  w-1/2 mt-4 h-10 text-black outline-none  rounded-lg "
+                  placeholder="Enter your email"
+                  onChange={(e) =>
+                    setUserData((prev) => ({ ...prev, email: e.target.value }))
+                  }
+                  required
+                />
+
+                <input
+                  type="text"
+                  className=" pl-2 w-1/2 mt-4 h-10 text-black outline-none  rounded-lg"
+                  placeholder="Enter your password"
+                  onChange={(e) =>
+                    setUserData((prev) => ({
+                      ...prev,
+                      password: e.target.value,
+                    }))
+                  }
+                  required
+                />
+                <div className="w-full items-center flex flex-col justify-center mt-4 ">
+                  <button
+                    type="submit"
+                    className="w-20 rounded-lg h-12 bg-blue-600"
+                  >
+                    {toggleLogin ? "Sign Up" : "Login"}
+                  </button>
+                  <div className=" mt-2">
+                    New user ?{" "}
+                    <button
+                      onClick={() => setToggleLogin(!toggleLogin)}
+                      className=" text-blue-600"
+                    >
+                      {toggleLogin ? "Login" : "Sign Up"}
+                    </button>
+                  </div>
+                </div>
+              </form>
+            </div>
+          </div>
+        </>
+      ) : (
+        <Todo data={getAllTodo} />
+      )}
+    </>
   );
 }
